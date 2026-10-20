@@ -1,9 +1,0 @@
-streamlit>=1.40.0
-torch
-torchaudio
-numpy
-scipy
-pandas
-timm
-huggingface_hub
-soundfile
