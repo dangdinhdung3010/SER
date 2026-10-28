@@ -3,6 +3,7 @@ import tempfile
 from datetime import datetime
 from pathlib import Path
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import streamlit as st
@@ -13,7 +14,7 @@ from step2_edge_preprocessing import EdgeAudioPreprocessor
 from step3_1d_swin_model import DINOv3AudioSER
 
 # ==============================================================================
-# 1. CẤU HÌNH TRANG & GIAO DIỆN HIỆN ĐẠI (THU GỌN VỪA KHÍT 1 MÀN HÌNH)
+# 1. CẤU HÌNH TRANG & GIAO DIỆN HIỆN ĐẠI (CLEAN CLINICAL & ANALYTICS DESIGN)
 # ==============================================================================
 st.set_page_config(
     page_title="Hệ thống Phân tích Cảm xúc Giọng nói",
@@ -25,43 +26,33 @@ st.set_page_config(
 st.markdown(
     """
     <style>
-    /* Ẩn khoảng trống thanh công cụ mặc định và ép gọn khung trang vào 1 màn hình */
-    header[data-testid="stHeader"] {
-        height: 0px !important;
-        min-height: 0px !important;
-    }
     .block-container {
-        padding-top: 0.45rem !important;
-        padding-bottom: 0.2rem !important;
-        padding-left: 1.2rem !important;
-        padding-right: 1.2rem !important;
-        max-width: 100% !important;
+        padding-top: 1.5rem;
+        padding-bottom: 2.5rem;
+        max-width: 1380px;
     }
-    div[data-testid="stVerticalBlock"] {
-        gap: 0.32rem !important;
-    }
-    /* Thanh tiêu đề chính thu gọn chiều cao */
+    /* Thanh tiêu đề chính */
     .app-header {
         background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
         color: #FFFFFF;
-        padding: 8px 18px;
-        border-radius: 10px;
-        margin-bottom: 6px;
+        padding: 22px 28px;
+        border-radius: 14px;
+        margin-bottom: 24px;
         display: flex;
         justify-content: space-between;
         align-items: center;
         flex-wrap: wrap;
-        gap: 8px;
-        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+        gap: 16px;
+        box-shadow: 0 4px 15px rgba(15, 23, 42, 0.08);
     }
     .app-title {
-        font-size: 16.5px;
+        font-size: 22px;
         font-weight: 700;
-        margin: 0;
+        margin: 0 0 4px 0;
         color: #F8FAFC;
     }
     .app-subtitle {
-        font-size: 11.5px;
+        font-size: 14px;
         color: #CBD5E1;
         margin: 0;
     }
@@ -69,82 +60,65 @@ st.markdown(
         background-color: rgba(16, 185, 129, 0.15);
         border: 1px solid #10B981;
         color: #34D399;
-        padding: 3px 10px;
+        padding: 6px 14px;
         border-radius: 999px;
-        font-size: 11.5px;
+        font-size: 13px;
         font-weight: 600;
     }
     /* Tiêu đề từng khu vực */
     .section-header {
-        font-size: 12.5px;
+        font-size: 15px;
         font-weight: 700;
         color: #0F172A;
         text-transform: uppercase;
-        letter-spacing: 0.4px;
-        padding-bottom: 3px;
+        letter-spacing: 0.5px;
+        padding-bottom: 8px;
         border-bottom: 2px solid #E2E8F0;
-        margin-bottom: 4px;
+        margin-bottom: 16px;
     }
-    /* Lưới 4 thẻ kết quả chính xếp trên 1 hàng ngang để tiết kiệm chiều dọc */
+    /* Lưới 4 thẻ kết quả chính */
     .metric-grid {
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 8px;
-        margin-bottom: 6px;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 14px;
+        margin-bottom: 20px;
     }
     .metric-card {
         background-color: #FFFFFF;
         border: 1px solid #E2E8F0;
-        border-radius: 8px;
-        padding: 7px 10px;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+        border-radius: 12px;
+        padding: 16px 18px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
     }
     .metric-label {
-        font-size: 10px;
+        font-size: 12px;
         font-weight: 700;
         color: #64748B;
         text-transform: uppercase;
-        margin-bottom: 2px;
+        margin-bottom: 6px;
     }
     .metric-value {
-        font-size: 14.5px;
+        font-size: 22px;
         font-weight: 700;
         color: #0F172A;
-        margin: 0 0 2px 0;
-        line-height: 1.2;
+        margin: 0 0 4px 0;
     }
     .metric-sub {
-        font-size: 10.5px;
+        font-size: 13px;
         color: #475569;
         margin: 0;
-        line-height: 1.2;
     }
-    /* Khung đánh giá chất lượng mẫu thu thu gọn */
+    /* Khung đánh giá chất lượng mẫu thu */
     .quality-card {
         background-color: #F8FAFC;
         border: 1px solid #CBD5E1;
-        border-radius: 8px;
-        padding: 6px 12px;
-        margin-top: 2px;
-        margin-bottom: 4px;
-        font-size: 12px;
+        border-radius: 12px;
+        padding: 16px 18px;
+        margin-top: 14px;
+        margin-bottom: 16px;
+        font-size: 14px;
         color: #1E293B;
-        line-height: 1.35;
-    }
-    /* Thu gọn chiều cao Tabs và Input của Streamlit */
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 8px;
-        min-height: 28px;
-    }
-    .stTabs [data-baseweb="tab"] {
-        padding-top: 2px;
-        padding-bottom: 2px;
-        font-size: 12px;
-    }
-    div[data-testid="stExpander"] summary {
-        padding-top: 4px !important;
-        padding-bottom: 4px !important;
-        font-size: 12.5px !important;
+        line-height: 1.7;
     }
     </style>
     """,
@@ -277,7 +251,6 @@ def analyze_voice_characteristics(waveform: torch.Tensor, sr: int = 16000) -> di
         "pacing_desc": pacing_desc,
     }
 
-
 def save_analysis_record(subject_id: str, duration_s: float, volume_desc: str, top1_name: str, top1_pct: float, pattern_type: str, top2_summary: str):
     """Lưu lịch sử phiên đo phục vụ theo dõi của bác sĩ hoặc cá nhân."""
     file_exists = HISTORY_LOG_FILE.exists()
@@ -322,7 +295,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-col_input, col_result = st.columns([4.2, 6.8], gap="medium")
+col_input, col_result = st.columns([4.5, 6.5], gap="large")
 
 with col_input:
     st.markdown('<div class="section-header">1. Thu âm & Kiểm tra Mẫu giọng nói</div>', unsafe_allow_html=True)
@@ -359,9 +332,11 @@ if active_audio is not None:
         st.markdown(
             f"""
             <div class="quality-card">
-                <div style="font-weight:700; color:#0F172A; margin-bottom:2px;">📋 ĐÁNH GIÁ CHẤT LƯỢNG MẪU THU</div>
-                • <b>Trạng thái mẫu:</b> <span style="color:{status_color}; font-weight:700;">{status_text}</span> | <b>Thời lượng câu nói:</b> {voice_info['duration_s']:.2f} giây<br/>
-                • <b>Cường độ âm lượng:</b> {voice_info['volume_desc']} | <b>Nhịp điệu phát âm:</b> {voice_info['pacing_desc']}
+                <div style="font-weight:700; color:#0F172A; margin-bottom:6px;">📋 ĐÁNH GIÁ CHẤT LƯỢNG MẪU THU</div>
+                • <b>Trạng thái mẫu:</b> <span style="color:{status_color}; font-weight:700;">{status_text}</span><br/>
+                • <b>Thời lượng câu nói:</b> {voice_info['duration_s']:.2f} giây<br/>
+                • <b>Cường độ âm lượng:</b> {voice_info['volume_desc']}<br/>
+                • <b>Nhịp điệu phát âm:</b> {voice_info['pacing_desc']}
             </div>
             """,
             unsafe_allow_html=True,
@@ -406,6 +381,8 @@ if active_audio is not None:
         top2_summary = f"{EMOTION_METADATA[top2_key]['name']} ({top2_pct:.1f}%)"
 
         analysis_result = {
+            "waveform": waveform,
+            "s_1d": s_1d,
             "probs": probs_np,
             "sorted_idx": sorted_idx,
             "top1_key": top1_key,
@@ -434,10 +411,10 @@ with col_result:
     if analysis_result is None:
         st.markdown(
             """
-            <div style="background-color:#F8FAFC; border:2px dashed #CBD5E1; border-radius:10px; padding:18px 16px; text-align:center; color:#475569;">
-                <div style="font-size:24px; margin-bottom:4px;">🎧</div>
-                <h3 style="margin:0 0 4px 0; color:#0F172A; font-size:15px;">Chưa có mẫu giọng nói đầu vào</h3>
-                <p style="margin:0; font-size:12.5px; color:#64748B;">
+            <div style="background-color:#F8FAFC; border:2px dashed #CBD5E1; border-radius:14px; padding:48px 24px; text-align:center; color:#475569;">
+                <div style="font-size:38px; margin-bottom:10px;">🎧</div>
+                <h3 style="margin:0 0 6px 0; color:#0F172A; font-size:18px;">Chưa có mẫu giọng nói đầu vào</h3>
+                <p style="margin:0; font-size:14px; color:#64748B;">
                     Hãy ghi âm trực tiếp hoặc tải một file .wav ở khung bên trái để xem bảng phân tích chi tiết 6 sắc thái cảm xúc.
                 </p>
             </div>
@@ -449,7 +426,7 @@ with col_result:
         st.markdown(
             f"""
             <div class="metric-grid">
-                <div class="metric-card" style="border-left: 4px solid {dom_meta['color']};">
+                <div class="metric-card" style="border-left: 5px solid {dom_meta['color']};">
                     <div class="metric-label">CẢM XÚC CHỦ ĐẠO</div>
                     <div class="metric-value" style="color: {dom_meta['color']};">{dom_meta['name']}</div>
                     <div class="metric-sub">{dom_meta['group']}</div>
@@ -461,12 +438,12 @@ with col_result:
                 </div>
                 <div class="metric-card">
                     <div class="metric-label">TÍNH CHẤT BIỂU CẢM</div>
-                    <div class="metric-value">{analysis_result['pattern_type']}</div>
+                    <div class="metric-value" style="font-size:19px;">{analysis_result['pattern_type']}</div>
                     <div class="metric-sub">{analysis_result['pattern_sub']}</div>
                 </div>
                 <div class="metric-card">
                     <div class="metric-label">SẮC THÁI ĐI KÈM (THỨ CẤP)</div>
-                    <div class="metric-value">{analysis_result['top2_summary']}</div>
+                    <div class="metric-value" style="font-size:19px;">{analysis_result['top2_summary']}</div>
                     <div class="metric-sub">Đặc trưng: {dom_meta['voice_trait']}</div>
                 </div>
             </div>
@@ -474,8 +451,8 @@ with col_result:
             unsafe_allow_html=True,
         )
 
-        # Bảng tỷ lệ thành phần 6 sắc thái cảm xúc (cố định chiều cao gọn 215px)
-        st.markdown('<div style="font-size:12px; font-weight:700; color:#1E293B; margin-bottom:2px;">Tỷ lệ thành phần 6 sắc thái cảm xúc nhận diện được trong giọng nói:</div>', unsafe_allow_html=True)
+        # Bảng tỷ lệ thành phần 6 sắc thái cảm xúc
+        st.markdown("**Tỷ lệ thành phần 6 sắc thái cảm xúc nhận diện được trong giọng nói:**")
         table_rows = []
         for rank, idx in enumerate(analysis_result["sorted_idx"], start=1):
             emo_key = CLASS_NAMES[idx]
@@ -501,16 +478,14 @@ with col_result:
             },
             hide_index=True,
             use_container_width=True,
-            height=215,
         )
-
 # ==============================================================================
-# 5. KHU VỰC LỊCH SỬ CÁC PHIÊN PHÂN TÍCH (XUẤT BÁO CÁO CSV)
+# 6. KHU VỰC 4: BẢNG LỊCH SỬ CÁC PHIÊN PHÂN TÍCH (XUẤT BÁO CÁO CSV)
 # ==============================================================================
-with st.expander("📁 3. Lịch sử các Phiên Phân tích Cảm xúc (Dành cho Bác sĩ & Theo dõi Cá nhân)", expanded=False):
+with st.expander("📁 4. Lịch sử các Phiên Phân tích Cảm xúc (Dành cho Bác sĩ & Theo dõi Cá nhân)", expanded=False):
     if HISTORY_LOG_FILE.exists():
         hist_df = pd.read_csv(HISTORY_LOG_FILE).tail(20).iloc[::-1]
-        st.dataframe(hist_df, use_container_width=True, hide_index=True, height=140)
+        st.dataframe(hist_df, use_container_width=True, hide_index=True)
         csv_data = hist_df.to_csv(index=False).encode("utf-8-sig")
         st.download_button(
             label="⬇ Tải Báo cáo Lịch sử Phân tích (.CSV / Excel)",
