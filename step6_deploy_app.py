@@ -3,7 +3,6 @@ import tempfile
 from datetime import datetime
 from pathlib import Path
 
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import streamlit as st
@@ -316,7 +315,8 @@ with col_input:
 
 analysis_result = None
 
-if active_audio is not None:
+# SỬA LỖI: Chỉ tiến hành xử lý và phân tích khi người dùng ĐÃ BẤM NÚT và có file âm thanh
+if analyze_btn and active_audio is not None:
     with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp:
         tmp.write(active_audio.getvalue())
         tmp_wav_path = tmp.name
@@ -381,8 +381,6 @@ if active_audio is not None:
         top2_summary = f"{EMOTION_METADATA[top2_key]['name']} ({top2_pct:.1f}%)"
 
         analysis_result = {
-            "waveform": waveform,
-            "s_1d": s_1d,
             "probs": probs_np,
             "sorted_idx": sorted_idx,
             "top1_key": top1_key,
@@ -394,28 +392,33 @@ if active_audio is not None:
             "voice_info": voice_info,
         }
 
-        if analyze_btn:
-            save_analysis_record(
-                subject_code,
-                voice_info["duration_s"],
-                voice_info["volume_desc"],
-                EMOTION_METADATA[top1_key]["short_name"],
-                top1_pct,
-                pattern_type,
-                f"{EMOTION_METADATA[top2_key]['short_name']} ({top2_pct:.1f}%)",
-            )
+        # Lưu log khi bấm nút phân tích thành công
+        save_analysis_record(
+            subject_code,
+            voice_info["duration_s"],
+            voice_info["volume_desc"],
+            EMOTION_METADATA[top1_key]["short_name"],
+            top1_pct,
+            pattern_type,
+            f"{EMOTION_METADATA[top2_key]['short_name']} ({top2_pct:.1f}%)",
+        )
 
+# Hiển thị kết quả dựa trên biến `analysis_result` sau khi đã bấm nút
 with col_result:
     st.markdown('<div class="section-header">2. Kết quả Phân tích Sắc thái Cảm xúc</div>', unsafe_allow_html=True)
 
-    if analysis_result is None:
+    # Nếu người dùng bấm nút nhưng chưa chọn/ghi âm file
+    if analyze_btn and active_audio is None:
+        st.warning("⚠️ Vui lòng ghi âm hoặc tải lên một file âm thanh .wav trước khi bấm phân tích!")
+
+    if 'analysis_result' not in locals() or analysis_result is None:
         st.markdown(
             """
             <div style="background-color:#F8FAFC; border:2px dashed #CBD5E1; border-radius:14px; padding:48px 24px; text-align:center; color:#475569;">
                 <div style="font-size:38px; margin-bottom:10px;">🎧</div>
                 <h3 style="margin:0 0 6px 0; color:#0F172A; font-size:18px;">Chưa có mẫu giọng nói đầu vào</h3>
                 <p style="margin:0; font-size:14px; color:#64748B;">
-                    Hãy ghi âm trực tiếp hoặc tải một file .wav ở khung bên trái để xem bảng phân tích chi tiết 6 sắc thái cảm xúc.
+                    Hãy ghi âm trực tiếp hoặc tải một file .wav ở khung bên trái, sau đó bấm nút <b>"Thực hiện Phân tích Cảm xúc"</b> để xem kết quả.
                 </p>
             </div>
             """,
@@ -479,6 +482,7 @@ with col_result:
             hide_index=True,
             use_container_width=True,
         )
+
 # ==============================================================================
 # 6. KHU VỰC 4: BẢNG LỊCH SỬ CÁC PHIÊN PHÂN TÍCH (XUẤT BÁO CÁO CSV)
 # ==============================================================================
