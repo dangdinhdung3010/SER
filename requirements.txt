@@ -7,3 +7,4 @@ pandas
 timm
 huggingface_hub
 soundfile
+matplotlib
