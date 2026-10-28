@@ -154,14 +154,14 @@ EMOTION_METADATA = {
         "voice_trait": "Cao độ giọng vút lên nhanh, nhịp nhấn chuyển biến rõ rệt",
     },
     "sad": {
-        "name": "😢 Trầm buồn & Chùng xuống",
+        "name": "😢 Trầm lắng & Buồn bã",
         "short_name": "Trầm buồn",
         "group": "Nhóm cảm xúc Trầm lắng",
         "color": "#4F46E5",
         "voice_trait": "Tông giọng trầm, năng lượng âm thanh giảm, nhịp nói chậm",
     },
     "fear": {
-        "name": "😨 Lo âu & Căng nhẹ",
+        "name": "😨 Lo âu & Hồi hộp",
         "short_name": "Lo âu",
         "group": "Nhóm cảm xúc Hồi hộp / Lo lắng",
         "color": "#7C3AED",
