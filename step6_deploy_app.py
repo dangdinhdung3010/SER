@@ -27,32 +27,32 @@ st.markdown(
     """
     <style>
     .block-container {
-        padding-top: 1.5rem;
-        padding-bottom: 2.5rem;
-        max-width: 1380px;
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+        max-width: 1440px;
     }
     /* Thanh tiêu đề chính */
     .app-header {
         background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
         color: #FFFFFF;
-        padding: 22px 28px;
-        border-radius: 14px;
-        margin-bottom: 24px;
+        padding: 10px 20px;
+        border-radius: 10px;
+        margin-bottom: 10px;
         display: flex;
         justify-content: space-between;
         align-items: center;
         flex-wrap: wrap;
-        gap: 16px;
+        gap: 8px;
         box-shadow: 0 4px 15px rgba(15, 23, 42, 0.08);
     }
     .app-title {
-        font-size: 22px;
+        font-size: 17px;
         font-weight: 700;
-        margin: 0 0 4px 0;
+        margin: 0 0 2px 0;
         color: #F8FAFC;
     }
     .app-subtitle {
-        font-size: 14px;
+        font-size: 11px;
         color: #CBD5E1;
         margin: 0;
     }
@@ -60,51 +60,51 @@ st.markdown(
         background-color: rgba(16, 185, 129, 0.15);
         border: 1px solid #10B981;
         color: #34D399;
-        padding: 6px 14px;
+        padding: 4px 10px;
         border-radius: 999px;
-        font-size: 13px;
+        font-size: 11px;
         font-weight: 600;
     }
     /* Tiêu đề từng khu vực */
     .section-header {
-        font-size: 15px;
+        font-size: 12px;
         font-weight: 700;
         color: #0F172A;
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        padding-bottom: 8px;
+        padding-bottom: 4px;
         border-bottom: 2px solid #E2E8F0;
-        margin-bottom: 16px;
+        margin-bottom: 6px;
     }
     /* Lưới 4 thẻ kết quả chính */
     .metric-grid {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
-        gap: 14px;
-        margin-bottom: 20px;
+        gap: 6px;
+        margin-bottom: 8px;
     }
     .metric-card {
         background-color: #FFFFFF;
         border: 1px solid #E2E8F0;
-        border-radius: 12px;
-        padding: 16px 18px;
+        border-radius: 8px;
+        padding: 8px 10px;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
     }
     .metric-label {
-        font-size: 12px;
+        font-size: 10px;
         font-weight: 700;
         color: #64748B;
         text-transform: uppercase;
-        margin-bottom: 6px;
+        margin-bottom: 2px;
     }
     .metric-value {
-        font-size: 22px;
+        font-size: 16px;
         font-weight: 700;
         color: #0F172A;
-        margin: 0 0 4px 0;
+        margin: 0 0 1px 0;
     }
     .metric-sub {
-        font-size: 13px;
+        font-size: 11px;
         color: #475569;
         margin: 0;
     }
@@ -112,14 +112,19 @@ st.markdown(
     .quality-card {
         background-color: #F8FAFC;
         border: 1px solid #CBD5E1;
-        border-radius: 12px;
-        padding: 16px 18px;
-        margin-top: 14px;
-        margin-bottom: 16px;
-        font-size: 14px;
+        border-radius: 8px;
+        padding: 8px 12px;
+        margin-top: 6px;
+        margin-bottom: 6px;
+        font-size: 12px;
         color: #1E293B;
-        line-height: 1.7;
+        line-height: 1.5;
     }
+    /* Thu gọn các widget Streamlit */
+    .stTextInput > div > div > input { padding: 4px 8px; font-size: 13px; }
+    .stTabs [data-baseweb="tab-list"] { gap: 2px; }
+    .stTabs [data-baseweb="tab"] { padding: 4px 12px; font-size: 13px; }
+    div[data-testid="stExpander"] { margin-top: 4px; }
     </style>
     """,
     unsafe_allow_html=True,
@@ -154,14 +159,14 @@ EMOTION_METADATA = {
         "voice_trait": "Cao độ giọng vút lên nhanh, nhịp nhấn chuyển biến rõ rệt",
     },
     "sad": {
-        "name": "😢 Trầm lắng & Buồn bã",
+        "name": "😢 Trầm buồn & Chùng xuống",
         "short_name": "Trầm buồn",
         "group": "Nhóm cảm xúc Trầm lắng",
         "color": "#4F46E5",
         "voice_trait": "Tông giọng trầm, năng lượng âm thanh giảm, nhịp nói chậm",
     },
     "fear": {
-        "name": "😨 Lo âu & Hồi hộp",
+        "name": "😨 Lo âu & Căng nhẹ",
         "short_name": "Lo âu",
         "group": "Nhóm cảm xúc Hồi hộp / Lo lắng",
         "color": "#7C3AED",
@@ -258,16 +263,16 @@ def render_friendly_voice_charts(waveform: torch.Tensor, s_1d: torch.Tensor, sr:
     time_axis = np.linspace(0, len(wav_np) / sr, num=len(wav_np))
     spec_2d = s_1d.transpose(0, 1).cpu().numpy()  # (32, 128)
 
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12.5, 3.3), dpi=150)
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 2.2), dpi=120)
     fig.patch.set_facecolor("#FFFFFF")
 
     # Biểu đồ 1: Biến thiên âm lượng và nhịp nói theo thời gian
     ax1.set_facecolor("#F8FAFC")
     ax1.plot(time_axis, wav_np, color="#2563EB", linewidth=0.9, alpha=0.85)
-    ax1.set_title("Biểu đồ Nhịp điệu & Độ mạnh nhẹ của Giọng nói", color="#0F172A", fontsize=10.5, fontweight="bold", pad=10)
-    ax1.set_xlabel("Thời gian câu nói (Giây)", color="#475569", fontsize=9)
-    ax1.set_ylabel("Độ mở âm lượng", color="#475569", fontsize=9)
-    ax1.tick_params(colors="#64748B", labelsize=8)
+    ax1.set_title("Biểu đồ Nhịp điệu & Độ mạnh nhẹ của Giọng nói", color="#0F172A", fontsize=9, fontweight="bold", pad=4)
+    ax1.set_xlabel("Thời gian câu nói (Giây)", color="#475569", fontsize=7.5)
+    ax1.set_ylabel("Độ mở âm lượng", color="#475569", fontsize=7.5)
+    ax1.tick_params(colors="#64748B", labelsize=7)
     ax1.grid(True, linestyle="--", linewidth=0.5, color="#CBD5E1", alpha=0.7)
     for spine in ax1.spines.values():
         spine.set_edgecolor("#CBD5E1")
@@ -275,18 +280,18 @@ def render_friendly_voice_charts(waveform: torch.Tensor, s_1d: torch.Tensor, sr:
     # Biểu đồ 2: Bản đồ sắc thái âm sắc (Trầm - Trung - Cao)
     ax2.set_facecolor("#F8FAFC")
     im = ax2.imshow(spec_2d, aspect="auto", origin="lower", cmap="YlOrRd", interpolation="bilinear")
-    ax2.set_title("Bản đồ Sắc thái Âm sắc (Màu đậm thể hiện nơi nhấn giọng)", color="#0F172A", fontsize=10.5, fontweight="bold", pad=10)
-    ax2.set_xlabel("Diễn tiến câu nói (Từ đầu câu ➔ cuối câu)", color="#475569", fontsize=9)
-    ax2.set_ylabel("Tông giọng", color="#475569", fontsize=9)
+    ax2.set_title("Bản đồ Sắc thái Âm sắc (Màu đậm thể hiện nơi nhấn giọng)", color="#0F172A", fontsize=9, fontweight="bold", pad=4)
+    ax2.set_xlabel("Diễn tiến câu nói (Từ đầu câu ➔ cuối câu)", color="#475569", fontsize=7.5)
+    ax2.set_ylabel("Tông giọng", color="#475569", fontsize=7.5)
     ax2.set_yticks([2, 15, 29])
-    ax2.set_yticklabels(["Trầm", "Trung", "Cao"], fontsize=8.5, color="#334155", fontweight="bold")
+    ax2.set_yticklabels(["Trầm", "Trung", "Cao"], fontsize=7.5, color="#334155", fontweight="bold")
     ax2.set_xticks([])
     for spine in ax2.spines.values():
         spine.set_edgecolor("#CBD5E1")
 
     cbar = fig.colorbar(im, ax=ax2, fraction=0.046, pad=0.04)
-    cbar.set_label("Năng lượng giọng", fontsize=8, color="#475569")
-    cbar.ax.yaxis.set_tick_params(color="#64748B", labelsize=7.5)
+    cbar.set_label("Năng lượng giọng", fontsize=7, color="#475569")
+    cbar.ax.yaxis.set_tick_params(color="#64748B", labelsize=6.5)
 
     plt.tight_layout()
     return fig
@@ -336,7 +341,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-col_input, col_result = st.columns([4.5, 6.5], gap="large")
+col_input, col_result = st.columns([4.5, 6.5], gap="medium")
 
 with col_input:
     st.markdown('<div class="section-header">1. Thu âm & Kiểm tra Mẫu giọng nói</div>', unsafe_allow_html=True)
@@ -452,10 +457,10 @@ with col_result:
     if analysis_result is None:
         st.markdown(
             """
-            <div style="background-color:#F8FAFC; border:2px dashed #CBD5E1; border-radius:14px; padding:48px 24px; text-align:center; color:#475569;">
-                <div style="font-size:38px; margin-bottom:10px;">🎧</div>
-                <h3 style="margin:0 0 6px 0; color:#0F172A; font-size:18px;">Chưa có mẫu giọng nói đầu vào</h3>
-                <p style="margin:0; font-size:14px; color:#64748B;">
+            <div style="background-color:#F8FAFC; border:2px dashed #CBD5E1; border-radius:10px; padding:20px 16px; text-align:center; color:#475569;">
+                <div style="font-size:28px; margin-bottom:6px;">🎧</div>
+                <h3 style="margin:0 0 4px 0; color:#0F172A; font-size:15px;">Chưa có mẫu giọng nói đầu vào</h3>
+                <p style="margin:0; font-size:12px; color:#64748B;">
                     Hãy ghi âm trực tiếp hoặc tải một file .wav ở khung bên trái để xem bảng phân tích chi tiết 6 sắc thái cảm xúc.
                 </p>
             </div>
@@ -479,12 +484,12 @@ with col_result:
                 </div>
                 <div class="metric-card">
                     <div class="metric-label">TÍNH CHẤT BIỂU CẢM</div>
-                    <div class="metric-value" style="font-size:19px;">{analysis_result['pattern_type']}</div>
+                    <div class="metric-value" style="font-size:14px;">{analysis_result['pattern_type']}</div>
                     <div class="metric-sub">{analysis_result['pattern_sub']}</div>
                 </div>
                 <div class="metric-card">
                     <div class="metric-label">SẮC THÁI ĐI KÈM (THỨ CẤP)</div>
-                    <div class="metric-value" style="font-size:19px;">{analysis_result['top2_summary']}</div>
+                    <div class="metric-value" style="font-size:14px;">{analysis_result['top2_summary']}</div>
                     <div class="metric-sub">Đặc trưng: {dom_meta['voice_trait']}</div>
                 </div>
             </div>
@@ -509,6 +514,7 @@ with col_result:
         df_dist = pd.DataFrame(table_rows)
         st.dataframe(
             df_dist,
+            height=250,
             column_config={
                 "Tỷ lệ tương ứng (%)": st.column_config.ProgressColumn(
                     "Mức độ hiện diện (%)",
@@ -524,7 +530,7 @@ with col_result:
 # ==============================================================================
 # 5. KHU VỰC 3: BIỂU ĐỒ TRỰC QUAN HÓA NHỊP ĐIỆU & ÂM SẮC GIỌNG NÓI
 # ==============================================================================
-st.markdown('<div class="section-header" style="margin-top:20px;">3. Biểu đồ Trực quan hóa Nhịp điệu & Âm sắc Giọng nói</div>', unsafe_allow_html=True)
+st.markdown('<div class="section-header" style="margin-top:6px;">3. Biểu đồ Trực quan hóa Nhịp điệu & Âm sắc Giọng nói</div>', unsafe_allow_html=True)
 
 if analysis_result is not None:
     voice_fig = render_friendly_voice_charts(analysis_result["waveform"], analysis_result["s_1d"])
