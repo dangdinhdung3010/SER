@@ -33,7 +33,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install torch torchaudio --index-url https://download.pytorch.org/whl/cpu
           pip install -r requirements.txt
-          pip install flake8
+          pip install flake8 pytest
 
       - name: Kiểm tra lỗi cú pháp nghiêm trọng (Syntax & Indentation Errors)
         run: |
@@ -50,7 +50,7 @@ jobs:
 
       - name: Chạy Unit Test & Integration Test (Pytest)
         run: |
-          pytest tests/test_ser_pipeline.py -v
+          python -m pytest tests/test_ser_pipeline.py -v
 
   deploy-to-production:
     name: 2. CD - Phát hành lên nhánh Production (Streamlit Cloud)
